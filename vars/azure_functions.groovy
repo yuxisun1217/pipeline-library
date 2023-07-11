@@ -149,3 +149,7 @@ def select_image_gallery(String project, String resource_group, String gallery, 
         return ''
     }
 }
+
+def getConnectionString(String sa_name, String rg_name) {
+    return sh(script: "az storage account show-connection-string -g ${rg_name} -n ${sa_name}|jq .connectionString -r", returnStdout: true).trim()
+}
