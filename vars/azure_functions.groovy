@@ -64,7 +64,7 @@ def select_image(String project, String resource_group, String storage_account, 
             }
             # Verify base image version lower than target version(e.g. target is 9.0, base image should not be 9.3)
             image_y=$(echo ${image}|cut -d'.' -f2)
-            [ $image_y -le $y_version ] || {
+            [ -n "$y_version" ] && [ $image_y -le $y_version ] || {
                 echo "Base image version $image higher than target project $project! Exit."
                 exit 1
             }
