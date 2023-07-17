@@ -4,7 +4,7 @@
 // Get the latest vhd url in Azure
 def select_image(String project, String resource_group, String storage_account, String container) {
     try {
-        withEnv(["project=$project", "SRC_STORAGE=$storage_account", "SRC_GROUP=$resource_group", "CONTAINER=$container"]) {
+        withEnv(["PROJECT=$project", "SRC_STORAGE=$storage_account", "SRC_GROUP=$resource_group", "CONTAINER=$container"]) {
             sh '''
             #!/bin/bash -x
             function parse_image_list() {
@@ -22,7 +22,7 @@ def select_image(String project, String resource_group, String storage_account, 
             }
 
             function get_image() {
-                filter="$project"
+                filter="$PROJECT"
                 # Generate filter list (e.g. 8.3.1 8.3 8)
                 filter_list=""
                 while true;
@@ -49,8 +49,8 @@ def select_image(String project, String resource_group, String storage_account, 
             connectionstring=`az storage account show-connection-string -n $SRC_STORAGE -g $SRC_GROUP|jq .connectionString -r`
             echo "============== Select the latest IMAGE if not specify ============="
             # Get RHEL x version
-            x_version=${project//.*}
-            y_version=$(echo ${project} | cut -d'.' -f2)
+            x_version=${PROJECT//.*}
+            y_version=$(echo ${PROJECT} | cut -d'.' -f2)
             # Filter image
             # Get RHEL version filter
             IMAGE_LIST_X=$(az storage blob list --connection-string $connectionstring --container ${CONTAINER}|jq .[].name -r|grep "RHEL-${x_version}"|grep -v "updates"|sort -rn)||true
@@ -64,10 +64,12 @@ def select_image(String project, String resource_group, String storage_account, 
             }
             # Verify base image version lower than target version(e.g. target is 9.0, base image should not be 9.3)
             image_y=$(echo ${image}|cut -d'.' -f2)
-            [ -n "$y_version" ] && [ $image_y -le $y_version ] || {
-                echo "Base image version $image higher than target project $project! Exit."
-                exit 1
-            }
+            if [ -n "$y_version" ];then
+                [ $image_y -le $y_version ] || {
+                    echo "Base image version $image higher than target project $PROJECT! Exit."
+                    exit 1
+                }
+            fi
 
             url=`az storage blob url -n $image --connection-string ${connectionstring} --container ${CONTAINER}|tr -d '"'`
             echo "$url" > $WORKSPACE/ori_imageurl
@@ -83,10 +85,9 @@ def select_image(String project, String resource_group, String storage_account, 
 // ARM64/CVM/TrustedLaunch VM can only use gallery image now
 def select_image_gallery(String project, String resource_group, String gallery, String image_definition) {
     try {
-        withEnv(["project=$project", "SRC_GROUP=$resource_group", "GALLERY=$gallery", "IMAGE_DEFINITION=$image_definition"]) {
+        withEnv(["PROJECT=$project", "SRC_GROUP=$resource_group", "GALLERY=$gallery", "IMAGE_DEFINITION=$image_definition"]) {
             sh '''
             #!/bin/bash -x
-
             function parse_gallery_image_list() {
                 for image in $1
                 do
@@ -101,7 +102,7 @@ def select_image_gallery(String project, String resource_group, String gallery, 
             }
 
             function get_image() {
-                filter="$project"
+                filter="$PROJECT"
                 # Generate filter list (e.g. 8.7 8)
                 filter_list=""
                 while true;
@@ -122,8 +123,8 @@ def select_image_gallery(String project, String resource_group, String gallery, 
 
             echo "============== Select the latest IMAGE if not specify ============="
             # Get RHEL x version
-            x_version=${project//.*}
-            y_version=$(echo ${project} | cut -d'.' -f2)
+            x_version=${PROJECT//.*}
+            y_version=$(echo ${PROJECT} | cut -d'.' -f2)
             # Filter image
             # Get RHEL version filter
             IMAGE_LIST_X=$(az sig image-version list -g ${SRC_GROUP} --gallery-name ${GALLERY} --gallery-image-definition ${IMAGE_DEFINITION}|jq -r .[].name|grep -v ^0|sort -rn)||true
@@ -137,7 +138,7 @@ def select_image_gallery(String project, String resource_group, String gallery, 
             # Verify base image version lower than target version(e.g. target is 9.0, base image should not be 9.3)
             image_y=$(echo ${image}|cut -d'.' -f2)
             [ $image_y -le $y_version ] || {
-                echo "Base image version $image higher than target project $project! Exit."
+                echo "Base image version $image higher than target project $PROJECT! Exit."
                 exit 1
             }
 
