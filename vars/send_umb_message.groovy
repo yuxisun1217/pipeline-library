@@ -2,10 +2,7 @@
 // 
 // Send umb message function. For gating test.
 //
-// Need to prepare 2 files, e.g.:
-// umb.txt:
-//  HTMLURL=<Test result html file link>
-//  TESTRESULT=passed/failed
+// Need to prepare ci_message_env.yaml, e.g.:
 //
 // ci_message_env.yaml:
 //  BREW_TASKID: 54596931
@@ -25,6 +22,9 @@
 //  PROVIDER: <Automation framework. e.g. LISAv2>
 //  TESTSUITE: tier1
 //  CHANNEL: <your VirtualTopic channel, e.g. 3rd-ci>
+//
+//  HTMLURL: <Test result html file link>
+//  TESTRESULT: passed/failed
 /////////////////////////////////////////
 
 def send_test_message(String message_type) {
