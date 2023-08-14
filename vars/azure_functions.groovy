@@ -156,3 +156,42 @@ def select_image_gallery(String project, String resource_group, String gallery, 
 def getConnectionString(String sa_name, String rg_name) {
     return sh(script: "az storage account show-connection-string -g ${rg_name} -n ${sa_name}|jq .connectionString -r", returnStdout: true).trim()
 }
+
+def create_image_version(String image_version) {
+    // For ARM64/CVM/TrustedLaunch, verify and create gallery image-version
+    // Must have environment vars: GALLERY, IMAGE_DEFINITION, SRC_GROUP, SRC_STORAGE, CONTAINER, AZURE_SUBSCRIPTION, TESTIMAGE
+    withEnv(["IMAGE_VERSION=$image_version"]) {
+        sh '''
+        # "For ARM64/CVM/TrustedLaunch, verify image-version exists..."
+        state=$(az sig image-version show -g ${SRC_GROUP} --gallery-image-version ${IMAGE_VERSION} \
+            --gallery-image-definition ${IMAGE_DEFINITION} --gallery-name ${GALLERY} | jq -r .provisioningState)
+        if [[ x$state != 'xSucceeded' ]]; then
+            # If can get state and not succeed, delete the old image-version first
+            [[ x$state != x ]] && {
+                echo "image-version ${IMAGE_VERSION} can get state but not Succeeded! Delete the old one." 
+                az sig image-version delete --resource-group ${SRC_GROUP} \
+                    --gallery-name ${GALLERY} --gallery-image-definition ${IMAGE_DEFINITION} \
+                    --gallery-image-version ${IMAGE_VERSION}
+            }
+
+            # Create gallery and image-definition
+            az sig image-version show -g ${SRC_GROUP} --gallery-image-version ${IMAGE_VERSION} \
+                --gallery-image-definition ${IMAGE_DEFINITION} --gallery-name ${GALLERY} || {
+                # Create image-version
+                az sig image-version create --resource-group ${SRC_GROUP} \
+                    --gallery-name ${GALLERY} --gallery-image-definition ${IMAGE_DEFINITION} \
+                    --gallery-image-version ${IMAGE_VERSION} \
+                    --os-vhd-storage-account /subscriptions/${AZURE_SUBSCRIPTION}/resourceGroups/${SRC_GROUP}/providers/Microsoft.Storage/storageAccounts/${SRC_STORAGE} \
+                    --os-vhd-uri https://${SRC_STORAGE}.blob.core.windows.net/${CONTAINER}/${TESTIMAGE}
+                [[ $? == 0 ]] || {
+                    echo "Create image-version failed! Exit."
+                    exit 1
+                }
+                echo "Create image-version successfully!"
+            }
+        else
+            echo "image-version already exists."
+        fi
+        '''
+    }
+}
