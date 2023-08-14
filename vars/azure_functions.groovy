@@ -137,10 +137,12 @@ def select_image_gallery(String project, String resource_group, String gallery, 
             }
             # Verify base image version lower than target version(e.g. target is 9.0, base image should not be 9.3)
             image_y=$(echo ${image}|cut -d'.' -f2)
-            [ $image_y -le $y_version ] || {
-                echo "Base image version $image higher than target project $PROJECT! Exit."
-                exit 1
-            }
+            if [ -n "$y_version" ];then
+                [ $image_y -le $y_version ] || {
+                    echo "Base image version $image higher than target project $PROJECT! Exit."
+                    exit 1
+                }
+            fi
 
             echo "$image" > $WORKSPACE/ori_image_version
             '''
