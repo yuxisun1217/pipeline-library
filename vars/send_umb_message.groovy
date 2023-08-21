@@ -2,7 +2,7 @@
 // 
 // Send umb message function. For gating test.
 //
-// Need to prepare ci_message_env.yaml, e.g.:
+// Need to prepare umb.yaml, e.g.:
 //
 // ci_message_env.yaml:
 //  BREW_TASKID: 54596931
@@ -28,12 +28,12 @@
 /////////////////////////////////////////
 
 def send_test_message(String message_type) {
-    ci = readYaml file: 'ci_message_env.yaml'
+    ci = readYaml file: 'umb.yaml'
     String date = sh(script: 'date -u +"%Y-%m-%dT%H:%M:%SZ"', returnStdout: true).trim()
-    def thread_id = sh(script: "echo ${ci.BREW_TASKID} | md5sum | awk '{print \$1}'", returnStdout: true).trim()
+    def thread_id = sh(script: "echo ${umb.BREW_TASKID} | md5sum | awk '{print \$1}'", returnStdout: true).trim()
     thread_id = thread_id + '-gating'
     def scratch = ''
-    if ( "${ci.SCRATCH}" == 'true' ) {
+    if ( "${umb.SCRATCH}" == 'true' ) {
         scratch = true
     } else {
         scratch = false
@@ -48,40 +48,40 @@ def send_test_message(String message_type) {
     def message_map = [:]
     message_map.artifact = [
         "type": "brew-build",
-        "id": ci.BREW_TASKID,
-        "issuer": "${ci.OWNER}",
-        "nvr": "${ci.NVR}",
-        "component": "${ci.PKGNAME}",
+        "id": umb.BREW_TASKID,
+        "issuer": "${umb.OWNER}",
+        "nvr": "${umb.NVR}",
+        "component": "${umb.PKGNAME}",
         "scratch": scratch
     ]
     message_map.contact = [
-        "docs": "${ci.DOCS}",
+        "docs": "${umb.DOCS}",
         "url": "${env.JENKINS_URL}",
         "team": "VirtQE-S1",
         "irc": "#S1",
-        "email": "${ci.EMAIL}",
-        "name": "${ci.NAME}"
+        "email": "${umb.EMAIL}",
+        "name": "${umb.NAME}"
     ]
     message_map.generated_at = "${date}"
     message_map.pipeline = [
-        "id": "${ci.BREW_TASKID}-gating",
+        "id": "${umb.BREW_TASKID}-gating",
         "name": "Tier1 Gating"
     ]
     message_map.run = [
-        "log": "${ci.BUILDURL}console",
-        "url": "${ci.BUILDURL}",
-        "debug": "${ci.HTMLURL}",
-        "rebuild": "${ci.BUILDURL}rebuild"]
+        "log": "${umb.BUILDURL}console",
+        "url": "${umb.BUILDURL}",
+        "debug": "${umb.HTMLURL}",
+        "rebuild": "${umb.BUILDURL}rebuild"]
     message_map.system = [[
-        "os": "${ci.OS}",
-        "architecture": "${ci.ARCH}",
-        "provider": "${ci.PROVIDER}"
+        "os": "${umb.OS}",
+        "architecture": "${umb.ARCH}",
+        "provider": "${umb.PROVIDER}"
     ]]
     message_map.test = [
         "category": "functional",
-        "namespace": "${ci.NAMESPACE}.brew-build",
-        "type": "${ci.TESTSUITE}",
-        "result": "${ci.TESTRESULT}"
+        "namespace": "${umb.NAMESPACE}.brew-build",
+        "type": "${umb.TESTSUITE}",
+        "result": "${umb.TESTRESULT}"
     ]
     message_map.version = "1.1.14"
 
@@ -89,7 +89,7 @@ def send_test_message(String message_type) {
     echo "${message_content}"
     def ret = sendCIMessage (
         providerName: 'Red Hat UMB',
-        overrides: [topic: "VirtualTopic.eng.ci.${ci.CHANNEL}.brew-build.test.${message_type}"],
+        overrides: [topic: "VirtualTopic.eng.ci.${umb.CHANNEL}.brew-build.test.${message_type}"],
         messageContent: message_content,
         messageType: 'Custom',
         failOnError: true
