@@ -4,7 +4,7 @@
 //
 // Need to prepare umb.yaml, e.g.:
 //
-// ci_message_env.yaml:
+// umb.yaml:
 //  BREW_TASKID: 54596931
 //  NVR: cloud-init-23.1.1-8.el9.anisinha202308111326
 //  VERSION: 23.1.1
@@ -22,13 +22,16 @@
 //  PROVIDER: <Automation framework. e.g. LISAv2>
 //  TESTSUITE: tier1
 //  CHANNEL: <your VirtualTopic channel, e.g. 3rd-ci>
+//  DOCS: <CI doc, e.g.https://docs.engineering.redhat.com/display/HYPERVTEST/Gating+Test>
 //
 //  HTMLURL: <Test result html file link>
 //  TESTRESULT: passed/failed
 /////////////////////////////////////////
 
-def send_test_message(String message_type) {
-    ci = readYaml file: 'umb.yaml'
+import groovy.json.JsonOutput
+
+def call(String message_type, String filename='umb.yaml') {
+    umb = readYaml file: filename
     String date = sh(script: 'date -u +"%Y-%m-%dT%H:%M:%SZ"', returnStdout: true).trim()
     def thread_id = sh(script: "echo ${umb.BREW_TASKID} | md5sum | awk '{print \$1}'", returnStdout: true).trim()
     thread_id = thread_id + '-gating'
@@ -68,10 +71,10 @@ def send_test_message(String message_type) {
         "name": "Tier1 Gating"
     ]
     message_map.run = [
-        "log": "${umb.BUILDURL}console",
-        "url": "${umb.BUILDURL}",
+        "log": "${env.BUILD_URL}console",
+        "url": "${env.BUILD_URL}",
         "debug": "${umb.HTMLURL}",
-        "rebuild": "${umb.BUILDURL}rebuild"]
+        "rebuild": "${env.BUILD_URL}rebuild"]
     message_map.system = [[
         "os": "${umb.OS}",
         "architecture": "${umb.ARCH}",
