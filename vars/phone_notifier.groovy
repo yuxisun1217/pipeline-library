@@ -1,3 +1,5 @@
+import java.net.URLEncoder
+
 // Send a message to your phone (Use Bark app)
 def call(String title, String body, String barkkey) {
     title_encode = URLEncoder.encode(title, "UTF-8")

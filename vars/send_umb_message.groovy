@@ -60,7 +60,7 @@ def call(String message_type, String filename='umb.yaml') {
     message_map.contact = [
         "docs": "${umb.DOCS}",
         "url": "${env.JENKINS_URL}",
-        "team": "VirtQE-S1",
+        "team": "RHEL-on-Azure",
         "irc": "#S1",
         "email": "${umb.EMAIL}",
         "name": "${umb.NAME}"
