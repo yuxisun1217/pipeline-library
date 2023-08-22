@@ -21,6 +21,7 @@
 //  NAME: AZURE-CI
 //  PROVIDER: <Automation framework. e.g. LISAv2>
 //  TESTSUITE: tier1
+//  TEAM: <your team, e.g. RHEL-on-Azure>
 //  CHANNEL: <your VirtualTopic channel, e.g. 3rd-ci>
 //  DOCS: <CI doc, e.g.https://docs.engineering.redhat.com/display/HYPERVTEST/Gating+Test>
 //
@@ -60,7 +61,7 @@ def call(String message_type, String filename='umb.yaml') {
     message_map.contact = [
         "docs": "${umb.DOCS}",
         "url": "${env.JENKINS_URL}",
-        "team": "RHEL-on-Azure",
+        "team": "${umb.TEAM}",
         "irc": "#S1",
         "email": "${umb.EMAIL}",
         "name": "${umb.NAME}"
