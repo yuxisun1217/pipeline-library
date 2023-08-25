@@ -34,8 +34,7 @@ import groovy.json.JsonOutput
 def call(String message_type, String filename='umb.yaml') {
     umb = readYaml file: filename
     String date = sh(script: 'date -u +"%Y-%m-%dT%H:%M:%SZ"', returnStdout: true).trim()
-    def thread_id = sh(script: "echo ${umb.BREW_TASKID} | md5sum | awk '{print \$1}'", returnStdout: true).trim()
-    thread_id = thread_id + '-gating'
+    def thread_id = sh(script: "echo ${umb.BREW_TASKID}${umb.ARCH} | md5sum | awk '{print \$1}'", returnStdout: true).trim()
     def scratch = ''
     if ( "${umb.SCRATCH}" == 'true' ) {
         scratch = true
@@ -68,8 +67,8 @@ def call(String message_type, String filename='umb.yaml') {
     ]
     message_map.generated_at = "${date}"
     message_map.pipeline = [
-        "id": "${umb.BREW_TASKID}-gating",
-        "name": "Tier1 Gating"
+        "id": "${thread_id}",
+        "name": "tier1-gating"
     ]
     message_map.run = [
         "log": "${env.BUILD_URL}console",
