@@ -83,7 +83,7 @@ def call(String message_type, String filename='umb.yaml') {
     message_map.test = [
         "category": "functional",
         "namespace": "${umb.NAMESPACE}.brew-build",
-        "docs": "${umb.DOCS}"
+        "docs": "${umb.DOCS}",
         "type": "${umb.TESTSUITE}",
         "result": "${umb.TESTRESULT}"
     ]
