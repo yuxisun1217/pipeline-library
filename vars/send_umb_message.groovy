@@ -102,6 +102,7 @@ def call(String message_type, String filename='umb.yaml') {
     String content = ret.getMessageContent()
     echo "${id}"
     echo "${content}"
+    sleep(1)
     def STATUSCODE = sh (returnStdout: true, script: """
         curl --insecure --silent --output /dev/null --write-out "%{http_code}" "https://datagrepper.engineering.redhat.com/id?id=${id}&chrome=false&is_raw=false"
         """).trim()
