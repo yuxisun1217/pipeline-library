@@ -127,7 +127,7 @@ def select_image_gallery(String project, String resource_group, String gallery, 
             y_version=$(echo ${PROJECT} | cut -d'.' -f2)
             # Filter image
             # Get RHEL version filter
-            IMAGE_LIST_X=$(az sig image-version list -g ${SRC_GROUP} --gallery-name ${GALLERY} --gallery-image-definition ${IMAGE_DEFINITION}|jq -r .[].name|grep -v ^0|sort -rn)||true
+            IMAGE_LIST_X=$(az sig image-version list -g ${SRC_GROUP} --gallery-name ${GALLERY} --gallery-image-definition ${IMAGE_DEFINITION}|jq -r .[].name|grep -v ^0|sort -rV)||true
             # Parse the list
             image=""
             get_image
