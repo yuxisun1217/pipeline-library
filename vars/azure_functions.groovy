@@ -53,7 +53,7 @@ def select_image(String project, String resource_group, String storage_account, 
             y_version=$(echo ${PROJECT} | cut -d'.' -f2)
             # Filter image
             # Get RHEL version filter
-            IMAGE_LIST_X=$(az storage blob list --connection-string $connectionstring --container ${CONTAINER}|jq .[].name -r|grep "RHEL-${x_version}"|grep -v "updates"|sort -rn)||true
+            IMAGE_LIST_X=$(az storage blob list --connection-string $connectionstring --container ${CONTAINER}|jq .[].name -r|grep "RHEL-${x_version}"|grep -v "updates"|sort -rV)||true
             # Parse the list in order e.g. if no 8.3.1, search for 8.3, then search for 8
             image=""
             [[ x"$COMPOSE_TYPE" != x"production" ]] || get_image "production"
