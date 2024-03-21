@@ -176,7 +176,7 @@ def create_image_version(String image_version, String azure_subscription = '') {
     // Must have environment vars: GALLERY, IMAGE_DEFINITION, SRC_GROUP, SRC_STORAGE, CONTAINER, AZURE_SUBSCRIPTION, TESTIMAGE
     withEnv(["IMAGE_VERSION=$image_version", "AZURE_SUBSCRIPTION=$azure_subscription"]) {
         sh '''
-        [[ ${AZURE_SUBSCRIPTION} == '' ]] || {
+        [[ "${AZURE_SUBSCRIPTION}" != '' ]] || {
             AZURE_SUBSCRIPTION=$(az account show|jq .id -r)
         }
 
