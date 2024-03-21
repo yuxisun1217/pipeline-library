@@ -7,7 +7,7 @@ def select_image(String project, String resource_group, String storage_account, 
         withEnv(["PROJECT=$project", "SRC_STORAGE=$storage_account", "SRC_GROUP=$resource_group", "CONTAINER=$container", "AZURE_SUBSCRIPTION=$azure_subscription"]) {
             sh '''
             #!/bin/bash -x
-            [[ "${AZURE_SUBSCRIPTION}" == '' ]] || {
+            [[ "${AZURE_SUBSCRIPTION}" != '' ]] || {
                 AZURE_SUBSCRIPTION=$(az account show|jq .id -r)
             }
 
@@ -92,7 +92,7 @@ def select_image_gallery(String project, String resource_group, String gallery, 
         withEnv(["PROJECT=$project", "SRC_GROUP=$resource_group", "GALLERY=$gallery", "IMAGE_DEFINITION=$image_definition", "AZURE_SUBSCRIPTION=$azure_subscription"]) {
             sh '''
             #!/bin/bash -x
-            [[ "${AZURE_SUBSCRIPTION}" == '' ]] || {
+            [[ "${AZURE_SUBSCRIPTION}" != '' ]] || {
                 AZURE_SUBSCRIPTION=$(az account show|jq .id -r)
             }
 
