@@ -2,9 +2,9 @@
 // Call function: azure_functions.<function>
 
 // Get the latest vhd url in Azure
-def select_image(String project, String resource_group, String storage_account, String container, String azure_subscription='') {
+def select_image(String project, String resource_group, String storage_account, String container, String azure_subscription='', String imageurl_file='ori_imageurl') {
     try {
-        withEnv(["PROJECT=$project", "SRC_STORAGE=$storage_account", "SRC_GROUP=$resource_group", "CONTAINER=$container", "AZURE_SUBSCRIPTION=$azure_subscription"]) {
+        withEnv(["PROJECT=$project", "SRC_STORAGE=$storage_account", "SRC_GROUP=$resource_group", "CONTAINER=$container", "AZURE_SUBSCRIPTION=$azure_subscription", "IMAGEURL_FILE=$imageurl_file"]) {
             sh '''
             #!/bin/bash -x
             [[ "${AZURE_SUBSCRIPTION}" != '' ]] || {
@@ -40,9 +40,9 @@ def select_image(String project, String resource_group, String storage_account, 
                     echo "Searching for the latest RHEL-${f} image"
                     # Get image
                     if [[ "$1" == "production" ]];then
-                        TMP_IMAGE_LIST=$(echo $IMAGE_LIST_X|tr ' ' '\n' | grep RHEL-$f | grep -v '.n')||true
+                        TMP_IMAGE_LIST=$(echo $IMAGE_LIST_X|tr ' ' '\n' | grep ^RHEL-$f | grep -v '.n')||true
                     else
-                        TMP_IMAGE_LIST=$(echo $IMAGE_LIST_X|tr ' ' '\n' | grep RHEL-$f)||true
+                        TMP_IMAGE_LIST=$(echo $IMAGE_LIST_X|tr ' ' '\n' | grep ^RHEL-$f)||true
                     fi
                     parse_image_list $TMP_IMAGE_LIST
                     [[ x"$image" == x ]] || break
@@ -75,11 +75,11 @@ def select_image(String project, String resource_group, String storage_account, 
                 }
             fi
 
-            url=`az storage blob url -n $image --connection-string ${connectionstring} --container ${CONTAINER} --subscription ${AZURE_SUBSCRIPTION}|tr -d '"'`
-            echo "$url" > $WORKSPACE/ori_imageurl
+            url=$(az storage blob url -n $image --connection-string ${connectionstring} --container ${CONTAINER} --subscription ${AZURE_SUBSCRIPTION}|tr -d '"')
+            echo "$url" > $WORKSPACE/${IMAGEURL_FILE}
             '''
         }
-        return readFile('ori_imageurl').trim()
+        return readFile(imageurl_file).trim()
     } catch(e) {
         return ''
     }
@@ -87,9 +87,9 @@ def select_image(String project, String resource_group, String storage_account, 
 
 // Get the latest gallery image version
 // ARM64/CVM/TrustedLaunch VM can only use gallery image now
-def select_image_gallery(String project, String resource_group, String gallery, String image_definition, String azure_subscription='') {
+def select_image_gallery(String project, String resource_group, String gallery, String image_definition, String azure_subscription='', imageversion_file='ori_image_version') {
     try {
-        withEnv(["PROJECT=$project", "SRC_GROUP=$resource_group", "GALLERY=$gallery", "IMAGE_DEFINITION=$image_definition", "AZURE_SUBSCRIPTION=$azure_subscription"]) {
+        withEnv(["PROJECT=$project", "SRC_GROUP=$resource_group", "GALLERY=$gallery", "IMAGE_DEFINITION=$image_definition", "AZURE_SUBSCRIPTION=$azure_subscription", "IMAGEVERSION_FILE=$imageversion_file"]) {
             sh '''
             #!/bin/bash -x
             [[ "${AZURE_SUBSCRIPTION}" != '' ]] || {
@@ -152,10 +152,10 @@ def select_image_gallery(String project, String resource_group, String gallery, 
                 }
             fi
 
-            echo "$image" > $WORKSPACE/ori_image_version
+            echo "$image" > $WORKSPACE/${IMAGEVERSION_FILE}
             '''
         }
-        return readFile('ori_image_version').trim()
+        return readFile(imageversion_file).trim()
     } catch(e) {
         return ''
     }
