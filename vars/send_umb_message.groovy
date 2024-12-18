@@ -61,7 +61,7 @@ def call(String message_type, String filename='umb.yaml') {
         "docs": "${umb.DOCS}",
         "url": "${env.JENKINS_URL}",
         "team": "${umb.TEAM}",
-        "irc": "#S1",
+        "slack": "#team-virt-cloud-qe",
         "email": "${umb.EMAIL}",
         "name": "${umb.NAME}"
     ]
